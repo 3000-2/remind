@@ -84,4 +84,4 @@ Reminders on shared lists can be written by other people. The skill tells the ag
 
 ## License
 
-MIT. Use it freely; keep the copyright notice.
+[MIT](LICENSE)

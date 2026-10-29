@@ -84,4 +84,4 @@ make e2e      # E2E 테스트, 미리 알림에 「remind-test」 목록을 만�
 
 ## 라이선스
 
-MIT. 자유롭게 쓰되 저작권 표시는 남긴다.
+[MIT](LICENSE)
