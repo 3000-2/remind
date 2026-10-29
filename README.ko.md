@@ -6,6 +6,10 @@ macOS 미리 알림을 EventKit 으로 다루는 CLI. AI 에이전트와 사람�
 
 ## 설치
 
+에이전트에게: `Read https://raw.githubusercontent.com/3000-2/remind/main/INSTALL.md and set up remind.`
+
+직접 설치:
+
 macOS 14 이상에서 동작한다. 빌드에는 Swift 6.1 이상(Xcode 또는 Command Line Tools 16.3 이상, `xcode-select --install`)이 필요하다.
 
 ```bash

@@ -6,6 +6,10 @@ A CLI for macOS Reminders built on EventKit, made for AI agents and people. Remi
 
 ## Install
 
+Ask your agent: `Read https://raw.githubusercontent.com/3000-2/remind/main/INSTALL.md and set up remind.`
+
+Or by hand:
+
 Runs on macOS 14+. Building needs Swift 6.1+ (Xcode or Command Line Tools 16.3+, `xcode-select --install`).
 
 ```bash
