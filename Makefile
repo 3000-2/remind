@@ -1,7 +1,13 @@
 PREFIX ?= $(HOME)/.local
+SWIFTC = swiftc -O -swift-version 5
 
 install:
 	mkdir -p $(PREFIX)/bin
-	swiftc -O main.swift -o $(PREFIX)/bin/remind
+	$(SWIFTC) Sources/*.swift -o $(PREFIX)/bin/remind
 
-.PHONY: install
+test:
+	mkdir -p .build
+	$(SWIFTC) Sources/Parse.swift Tests/main.swift -o .build/remind-tests
+	.build/remind-tests
+
+.PHONY: install test

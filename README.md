@@ -2,7 +2,7 @@
 
 # remind
 
-A CLI for macOS Reminders built on EventKit. It handles what AppleScript can't: recurrence rules, multiple alerts, and URLs.
+A CLI for macOS Reminders built on EventKit, made for AI agents and people. Reminders sync to iPhone via iCloud.
 
 ## Install
 
@@ -15,24 +15,27 @@ echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc && exec zsh   # if not o
 remind lists   # first run asks for Reminders access
 ```
 
-Access is granted to the app that runs `remind` (Terminal, iTerm, your editor). Change it in System Settings > Privacy & Security > Reminders.
+Access is granted to the app that runs `remind` (Terminal, iTerm, your editor), so anything run from that app can use it. Change it in System Settings > Privacy & Security > Reminders.
 
 ## Usage
 
 ```bash
-remind add "Title" --list Work --on 2026-11-16 --at 10:00 --every mon --alert-before 1d --note memo --url https://...
-remind list [--list name] [--done] [--json]
-remind lists
-remind done <id>...
-remind delete <id>...
-remind move <id> --list name
-remind help
+remind lists                                    # list names; the default list is marked
+remind list --due today --json                  # find ids
+remind add "Pay rent" --list Home --on 2026-11-25 --at 10:00 --alert 1d
+remind add "Standup" --every weekday --at 09:30
+remind add "Passport renewal" --on 2027-03-01 --all-day
+remind edit <id> --on fri --note "bring receipt"
+remind done <id>
+remind help                                     # every option
 ```
 
-- Without `--list`, reminders go to the default list.
-- A date without a time defaults to 09:00 (see Config). A time without a date means today, or tomorrow if that time has passed.
-- Adding a title that already exists as an incomplete reminder in the same list is refused (`--force` to override).
-- Sections, groups, tags, subtasks, and flags are not supported by EventKit.
+- Dates: `YYYY-MM-DD`, `today`, `tomorrow`, or a weekday (`mon` = the next Monday after today).
+- Repeat: `--every day|weekday|year|mon,wed|10th,25th,last`.
+- A due time gets an on-time alarm; `--alert 1d` adds one early alarm, `--alert none` removes alarms. `--all-day` has no alarm; iPhone notifies at its "Today Notification" time.
+- `add` refuses a title that already exists in the list (`--force` to add anyway).
+- Other commands: `undone`, `delete`, `lists add <name>`.
+- JSON output changed in this version: `due` is ISO 8601 (all-day: `YYYY-MM-DD`), `lists --json` returns objects, `move` and `--next` became `edit --list` and `--on mon`.
 
 ## Config
 
@@ -40,7 +43,7 @@ Optional. `~/.config/remind/config.json` (or `$XDG_CONFIG_HOME/remind/config.jso
 
 ```json
 {
-  "aliases": { "p": "Reminders", "w": "Work" },
+  "aliases": { "w": "Work" },
   "defaultTime": "09:00",
   "listDefaultTimes": { "Work": "10:00" }
 }
@@ -48,25 +51,18 @@ Optional. `~/.config/remind/config.json` (or `$XDG_CONFIG_HOME/remind/config.jso
 
 - `aliases`: short names for `--list`.
 - `defaultTime`: time used when only a date is given.
-- `listDefaultTimes`: per-list override of `defaultTime`, keyed by list name or alias.
+- `listDefaultTimes`: per-list `defaultTime`, keyed by list name or alias.
 
 ## Use with an agent
 
-Install the skill. It works with Claude Code, Codex, Cursor, and other agents that support skills:
+Install the skill (Claude Code, Codex, Cursor, and other agents that support skills):
 
 ```bash
 npx skills add 3000-2/remind
 ```
 
-Or add this to `AGENTS.md` / `CLAUDE.md`:
+Let the agent read freely and ask before anything else:
+- Claude Code: allow `Bash(remind list:*)`, `Bash(remind lists:*)` and `Bash(remind help)`.
+- Codex: allow the prefixes `remind list`, `remind lists`, `remind help`.
 
-```markdown
-## Reminders
-
-Use the `remind` CLI for macOS Reminders (synced to iPhone). Run `remind help` for all options.
-- `remind lists` for list names, `remind list --json` to read.
-- `remind add "title" --list <name> --on YYYY-MM-DD --at HH:MM` to add.
-- Run `done` / `delete` / `move` only when the user asks.
-```
-
-Or just tell your agent: "use the remind CLI (`remind help`)".
+Reminders on shared lists can be written by other people. The skill tells the agent to treat their text as data, not instructions.

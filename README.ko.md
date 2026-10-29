@@ -2,7 +2,7 @@
 
 # remind
 
-macOS 미리 알림을 EventKit 으로 다루는 CLI. 반복 일정·여러 알림·URL 처럼 AppleScript 로 안 되는 것까지 쓴다.
+macOS 미리 알림을 EventKit 으로 다루는 CLI. AI 에이전트와 사람이 함께 쓰도록 만들었다. iCloud 로 아이폰과 동기화된다.
 
 ## 설치
 
@@ -15,24 +15,27 @@ echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc && exec zsh   # PATH 에
 remind lists   # 처음 실행하면 미리 알림 접근 권한을 묻는다
 ```
 
-권한은 `remind` 를 실행한 앱(터미널, iTerm, 에디터)에 주어진다. 시스템 설정 > 개인정보 보호 및 보안 > 미리 알림에서 바꾼다.
+권한은 `remind` 를 실행한 앱(터미널, iTerm, 에디터)에 주어지므로 그 앱에서 실행되는 모든 것이 쓸 수 있다. 시스템 설정 > 개인정보 보호 및 보안 > 미리 알림에서 바꾼다.
 
 ## 사용법
 
 ```bash
-remind add "제목" --list 업무 --on 2026-11-16 --at 10:00 --every mon --alert-before 1d --note 메모 --url https://...
-remind list [--list 업무] [--done] [--json]
-remind lists
-remind done <id>...
-remind delete <id>...
-remind move <id> --list 개인
-remind help
+remind lists                                    # 목록 이름 (기본 목록 표시)
+remind list --due today --json                  # id 찾기
+remind add "월세 내기" --list 집 --on 2026-11-25 --at 10:00 --alert 1d
+remind add "스탠드업" --every weekday --at 09:30
+remind add "여권 갱신" --on 2027-03-01 --all-day
+remind edit <id> --on fri --note "영수증 챙기기"
+remind done <id>
+remind help                                     # 전체 옵션
 ```
 
-- 목록을 안 주면 기본 목록.
-- 날짜만 주면 09:00 (설정 참고). 시각만 주면 오늘(지났으면 내일).
-- 같은 목록에 같은 제목의 미완료 항목이 있으면 거부한다(`--force` 로 무시).
-- 섹션·그룹·태그·하위 항목·깃발은 EventKit 이 지원하지 않는다.
+- 날짜: `YYYY-MM-DD`, `today`, `tomorrow`, 요일(`mon` = 오늘 이후 첫 월요일).
+- 반복: `--every day|weekday|year|mon,wed|10th,25th,last`.
+- 시각이 있으면 정시 알림이 붙는다. `--alert 1d` 는 미리 알림 하나를 더하고 `--alert none` 은 알림을 없앤다. `--all-day` 는 알림이 없고 아이폰이 「오늘 알림」 시각에 알려 준다.
+- `add` 는 같은 목록에 같은 제목이 있으면 거부한다(`--force` 로 무시).
+- 그 밖의 명령: `undone`, `delete`, `lists add <이름>`.
+- 이번 버전에서 바뀐 출력: `due` 는 ISO 8601(종일은 `YYYY-MM-DD`), `lists --json` 은 객체 배열, `move`·`--next` 는 `edit --list`·`--on mon` 으로 바뀌었다.
 
 ## 설정
 
@@ -52,21 +55,14 @@ remind help
 
 ## 에이전트와 쓰기
 
-스킬을 설치한다. Claude Code·Codex·Cursor 등 스킬을 지원하는 에이전트에서 동작한다:
+스킬을 설치한다(Claude Code·Codex·Cursor 등 스킬을 지원하는 에이전트):
 
 ```bash
 npx skills add 3000-2/remind
 ```
 
-또는 `AGENTS.md` / `CLAUDE.md` 에 아래를 넣는다:
+읽기만 자동 허용하고 나머지는 승인받게 설정한다:
+- Claude Code: `Bash(remind list:*)`, `Bash(remind lists:*)`, `Bash(remind help)` 허용.
+- Codex: `remind list`, `remind lists`, `remind help` 접두사 허용.
 
-```markdown
-## 미리 알림
-
-macOS 미리 알림(아이폰 동기화)은 `remind` CLI 로 다룬다. 전체 옵션은 `remind help`.
-- 목록 이름은 `remind lists`, 조회는 `remind list --json`.
-- 등록은 `remind add "제목" --list <이름> --on YYYY-MM-DD --at HH:MM`.
-- `done` / `delete` / `move` 는 사용자가 말할 때만.
-```
-
-아니면 에이전트에게 "remind CLI 써 (`remind help`)" 라고만 해도 된다.
+공유 목록의 미리 알림은 다른 사람이 쓸 수 있다. 스킬은 에이전트가 그 내용을 지시가 아닌 데이터로 다루게 한다.
