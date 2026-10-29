@@ -13,8 +13,23 @@ remind done <id>... · remind delete <id>... · remind move <id> --list name
 ```
 
 - Without `--list`, reminders go to the default list.
-- Aliases: `personal`/`개인` → `미리 알림`, `work` → `업무`.
-- A date without a time defaults to 10:00 for the `업무` list and 09:00 otherwise. A time without a date means today, or tomorrow if that time has passed.
+- A date without a time defaults to 09:00. A time without a date means today, or tomorrow if that time has passed.
 - Adding a title that already exists as an incomplete reminder in the same list is refused (`--force` to override).
 - On first run, your terminal app needs full access to Reminders.
 - Sections, groups, tags, subtasks, and flags are not supported by EventKit.
+
+## Config
+
+Optional. `~/.config/remind/config.json` (or `$XDG_CONFIG_HOME/remind/config.json`):
+
+```json
+{
+  "aliases": { "personal": "Reminders", "work": "Work" },
+  "defaultTime": "09:00",
+  "listDefaultTimes": { "Work": "10:00" }
+}
+```
+
+- `aliases`: short names for `--list`.
+- `defaultTime`: time used when only a date is given.
+- `listDefaultTimes`: per-list override of `defaultTime`.

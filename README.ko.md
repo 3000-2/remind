@@ -13,8 +13,23 @@ remind done <id>... · remind delete <id>... · remind move <id> --list 개인
 ```
 
 - 목록을 안 주면 기본 목록.
-- 별칭: `개인`/`personal` → 「미리 알림」, `work` → `업무`.
-- 날짜만 주면 `업무` 목록은 10:00, 그 외 09:00. 시각만 주면 오늘(지났으면 내일).
+- 날짜만 주면 09:00. 시각만 주면 오늘(지났으면 내일).
 - 같은 목록에 같은 제목의 미완료 항목이 있으면 거부한다(`--force` 로 무시).
 - 처음 실행할 때 터미널 앱에 미리 알림 전체 접근 권한이 필요하다.
 - 섹션·그룹·태그·하위 항목·깃발은 EventKit 이 지원하지 않는다.
+
+## 설정
+
+선택 사항. `~/.config/remind/config.json` (또는 `$XDG_CONFIG_HOME/remind/config.json`):
+
+```json
+{
+  "aliases": { "개인": "미리 알림", "work": "업무" },
+  "defaultTime": "09:00",
+  "listDefaultTimes": { "업무": "10:00" }
+}
+```
+
+- `aliases`: `--list` 에 쓸 별칭.
+- `defaultTime`: 날짜만 줬을 때 쓸 시각.
+- `listDefaultTimes`: 목록별 `defaultTime`.

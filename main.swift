@@ -2,7 +2,32 @@ import EventKit
 import Foundation
 
 let store = EKEventStore()
-let listAliases = ["개인": "미리 알림", "personal": "미리 알림", "work": "업무"]
+struct Config: Decodable {
+  var aliases: [String: String] = [:]
+  var defaultTime = "09:00"
+  var listDefaultTimes: [String: String] = [:]
+
+  enum CodingKeys: String, CodingKey { case aliases, defaultTime, listDefaultTimes }
+
+  init() {}
+
+  init(from decoder: Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    aliases = try container.decodeIfPresent([String: String].self, forKey: .aliases) ?? [:]
+    defaultTime = try container.decodeIfPresent(String.self, forKey: .defaultTime) ?? "09:00"
+    listDefaultTimes = try container.decodeIfPresent([String: String].self, forKey: .listDefaultTimes) ?? [:]
+  }
+}
+
+let configPath: String = {
+  let base = ProcessInfo.processInfo.environment["XDG_CONFIG_HOME"] ?? NSHomeDirectory() + "/.config"
+  return base + "/remind/config.json"
+}()
+
+let config: Config = {
+  guard let data = FileManager.default.contents(atPath: configPath) else { return Config() }
+  do { return try JSONDecoder().decode(Config.self, from: data) } catch { fail("Invalid config \(configPath): \(error)") }
+}()
 let weekdays = ["sun": 1, "mon": 2, "tue": 3, "wed": 4, "thu": 5, "fri": 6, "sat": 7]
 let knownFlags: Set<String> = [
   "list", "on", "next", "at", "every", "alert-before", "note", "url", "priority", "json", "done", "force",
@@ -63,19 +88,23 @@ func calendar(named raw: String?) -> EKCalendar {
     guard let fallback = store.defaultCalendarForNewReminders() else { fail("No default list") }
     return fallback
   }
-  let name = listAliases[raw] ?? raw
+  let name = config.aliases[raw] ?? raw
   guard let found = store.calendars(for: .reminder).first(where: { $0.title == name }) else {
     fail("List not found: \(name)")
   }
   return found
 }
 
-func parseTime(_ value: String) -> (Int, Int) {
+func parseTime(_ value: String, source: String = "--at") -> (Int, Int) {
   let parts = value.split(separator: ":").compactMap { Int($0) }
   guard parts.count == 2, (0..<24).contains(parts[0]), (0..<60).contains(parts[1]) else {
-    fail("--at must be HH:MM")
+    fail("\(source) must be HH:MM")
   }
   return (parts[0], parts[1])
+}
+
+func defaultTime(for list: EKCalendar) -> (Int, Int) {
+  parseTime(config.listDefaultTimes[list.title] ?? config.defaultTime, source: "Default time in \(configPath)")
 }
 
 func parseOffset(_ value: String) -> TimeInterval {
@@ -134,7 +163,7 @@ func firstOccurrence(every: String, from start: Date, hour: Int, minute: Int) ->
 func resolveDue(_ flags: [String: String], defaultTime: (Int, Int)) -> Date? {
   let cal = Calendar.current
   let now = Date()
-  let time = flags["at"].map(parseTime)
+  let time = flags["at"].map { parseTime($0) }
   if let every = flags["every"] {
     let (hour, minute) = time ?? defaultTime
     let start = flags["on"].flatMap { parseDay($0) }.map { cal.date(byAdding: .second, value: -1, to: $0)! } ?? now
@@ -227,7 +256,7 @@ func add(_ positional: [String], _ flags: [String: String]) {
     guard let level = ["high": 1, "medium": 5, "low": 9][priority] else { fail("--priority: high|medium|low") }
     reminder.priority = level
   }
-  if let due = resolveDue(flags, defaultTime: target.title == "업무" ? (10, 0) : (9, 0)) {
+  if let due = resolveDue(flags, defaultTime: defaultTime(for: target)) {
     reminder.dueDateComponents = Calendar.current.dateComponents(
       [.year, .month, .day, .hour, .minute, .timeZone], from: due)
     reminder.addAlarm(EKAlarm(relativeOffset: 0))
