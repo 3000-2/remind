@@ -1,0 +1,2 @@
+- [ ] `make check` passes
+- [ ] `remind help`, READMEs, and `skills/remind/SKILL.md` updated if commands, flags, or output changed
