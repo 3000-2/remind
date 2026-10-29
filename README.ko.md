@@ -77,7 +77,11 @@ make e2e      # E2E 테스트, 미리 알림에 「remind-test」 목록을 만�
 에이전트가 먼저 리마인더를 제안하게 하려면 각자의 규칙에 적는다(예: "나중에 확인할 일이 생기면 리마인더 등록을 제안").
 
 읽기만 자동 허용하고 나머지는 승인받게 설정한다:
-- Claude Code: `Bash(remind list:*)`, `Bash(remind lists:*)`, `Bash(remind help)` 허용.
-- Codex: `remind list`, `remind lists`, `remind help` 접두사 허용.
+- Claude Code: `Bash(remind list:*)`, `Bash(remind lists)`, `Bash(remind lists --json)`, `Bash(remind help)` 허용.
+- Codex: `remind list` 접두사와 `remind lists`, `remind lists --json`, `remind help` 명령 그대로 허용.
 
 공유 목록의 미리 알림은 다른 사람이 쓸 수 있다. 스킬은 에이전트가 그 내용을 지시가 아닌 데이터로 다루게 한다.
+
+## 라이선스
+
+MIT. 자유롭게 쓰되 저작권 표시는 남긴다.

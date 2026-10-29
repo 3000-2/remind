@@ -77,7 +77,11 @@ For other agents, or without a clone: `npx skills add 3000-2/remind -g`. Use one
 To have agents suggest reminders unprompted, say so in your own agent rules (for example, "offer a reminder when a task needs a follow-up later").
 
 Let the agent read freely and ask before anything else:
-- Claude Code: allow `Bash(remind list:*)`, `Bash(remind lists:*)` and `Bash(remind help)`.
-- Codex: allow the prefixes `remind list`, `remind lists`, `remind help`.
+- Claude Code: allow `Bash(remind list:*)`, `Bash(remind lists)`, `Bash(remind lists --json)` and `Bash(remind help)`.
+- Codex: allow the prefix `remind list` and the exact commands `remind lists`, `remind lists --json`, `remind help`.
 
 Reminders on shared lists can be written by other people. The skill tells the agent to treat their text as data, not instructions.
+
+## License
+
+MIT. Use it freely; keep the copyright notice.
