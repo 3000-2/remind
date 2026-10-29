@@ -25,7 +25,9 @@ let configPath: String = {
 
 func loadConfig() throws -> Config {
   guard FileManager.default.fileExists(atPath: configPath) else { return Config() }
-  guard let data = FileManager.default.contents(atPath: configPath) else { throw RemindError("Cannot read \(configPath)") }
+  guard let data = FileManager.default.contents(atPath: configPath) else {
+    throw RemindError("Cannot read \(configPath)")
+  }
   do { return try JSONDecoder().decode(Config.self, from: data) } catch {
     throw RemindError("Invalid config \(configPath): \(error.localizedDescription)")
   }
@@ -35,15 +37,10 @@ struct Reminders {
   let store = EKEventStore()
   let config: Config
 
-  func requestAccess() throws {
-    let semaphore = DispatchSemaphore(value: 0)
-    var granted = false
-    store.requestFullAccessToReminders { ok, _ in
-      granted = ok
-      semaphore.signal()
+  func requestAccess() async throws {
+    guard (try? await store.requestFullAccessToReminders()) == true else {
+      throw RemindError("No access to Reminders (System Settings > Privacy & Security > Reminders)")
     }
-    semaphore.wait()
-    if !granted { throw RemindError("No access to Reminders (System Settings > Privacy & Security > Reminders)") }
   }
 
   var lists: [EKCalendar] { store.calendars(for: .reminder) }
@@ -68,7 +65,7 @@ struct Reminders {
   }
 
   func createList(_ name: String) throws -> EKCalendar {
-      if lists.contains(where: { $0.title == name }) { throw RemindError("List already exists: \(name)") }
+    if lists.contains(where: { $0.title == name }) { throw RemindError("List already exists: \(name)") }
     if config.aliases[name] != nil { throw RemindError("\(name) is an alias in \(configPath)") }
     guard let source = store.defaultCalendarForNewReminders()?.source else { throw RemindError("No default list") }
     let list = EKCalendar(for: .reminder, eventStore: store)
@@ -106,7 +103,8 @@ struct Reminders {
   }
 
   func completed(in calendars: [EKCalendar]) -> [EKReminder] {
-    fetchReminders(store.predicateForCompletedReminders(withCompletionDateStarting: nil, ending: nil, calendars: calendars))
+    fetchReminders(
+      store.predicateForCompletedReminders(withCompletionDateStarting: nil, ending: nil, calendars: calendars))
   }
 }
 
@@ -187,11 +185,7 @@ func knownRepeat(_ reminder: EKReminder) -> Repeat? {
   }
 }
 
-let isoFormatter: ISO8601DateFormatter = {
-  let formatter = ISO8601DateFormatter()
-  formatter.timeZone = .current
-  return formatter
-}()
+let isoStyle = Date.ISO8601FormatStyle(timeSeparator: .colon, timeZoneSeparator: .colon, timeZone: .current)
 
 func dateFormatter(_ format: String, locale: Locale) -> DateFormatter {
   let formatter = DateFormatter()
@@ -207,7 +201,7 @@ let textDayFormatter = dateFormatter("yyyy-MM-dd (E)", locale: .current)
 
 func format(_ due: Due, json: Bool) -> String {
   switch (due, json) {
-  case (.timed(let date), true): return isoFormatter.string(from: date)
+  case (.timed(let date), true): return date.formatted(isoStyle)
   case (.allDay(let day), true): return jsonDayFormatter.string(from: day)
   case (.timed(let date), false): return textTimeFormatter.string(from: date)
   case (.allDay(let day), false): return textDayFormatter.string(from: day)
@@ -231,7 +225,9 @@ func row(_ reminder: EKReminder, json: Bool) -> [String: Any] {
   if let priority = describePriority(reminder.priority) { row["priority"] = priority }
   if let notes = reminder.notes, !notes.isEmpty { row["note"] = notes }
   if let url = reminder.url { row["url"] = url.absoluteString }
-  if let completedAt = reminder.completionDate, reminder.isCompleted { row["completedAt"] = isoFormatter.string(from: completedAt) }
+  if let completedAt = reminder.completionDate, reminder.isCompleted {
+    row["completedAt"] = completedAt.formatted(isoStyle)
+  }
   return row.mapValues { ($0 as? String).map { sanitize($0, multiline: json) } ?? $0 }
 }
 

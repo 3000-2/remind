@@ -53,7 +53,9 @@ func parseArgs(_ args: [String], command: String, values: Set<String>, switches:
       continue
     }
     let key = String(arg.dropFirst(2))
-    guard values.contains(key) || switches.contains(key) else { throw RemindError("Unknown option for \(command): \(arg)") }
+    guard values.contains(key) || switches.contains(key) else {
+      throw RemindError("Unknown option for \(command): \(arg)")
+    }
     guard result.flags[key] == nil else { throw RemindError("Repeated option: \(arg)") }
     if switches.contains(key) {
       result.flags[key] = ""
@@ -87,7 +89,9 @@ func parseDay(_ value: String, now: Date) throws -> Date {
   }
   let parts = value.split(separator: "-", omittingEmptySubsequences: false)
   let message = "--on must be YYYY-MM-DD, today, tomorrow or a weekday"
-  guard parts.count == 3, parts.map(\.count) == [4, 2, 2], parts.allSatisfy(isDigits) else { throw RemindError(message) }
+  guard parts.count == 3, parts.map(\.count) == [4, 2, 2], parts.allSatisfy(isDigits) else {
+    throw RemindError(message)
+  }
   let fields = DateComponents(year: Int(parts[0]), month: Int(parts[1]), day: Int(parts[2]), hour: 12)
   guard let year = fields.year, year >= 1970, let noon = gregorian.date(from: fields),
     gregorian.component(.month, from: noon) == fields.month, gregorian.component(.day, from: noon) == fields.day
@@ -205,7 +209,8 @@ func matches(_ recurrence: Repeat, _ day: Date, anchor: Date?) -> Bool {
     return days.contains(dayOfMonth) || (days.contains(lastDayOfMonth) && dayOfMonth == lastDay)
   case .yearly:
     guard let anchor else { return false }
-    return gregorian.dateComponents([.month, .day], from: day) == gregorian.dateComponents([.month, .day], from: anchor)
+    return gregorian.dateComponents([.month, .day], from: day)
+      == gregorian.dateComponents([.month, .day], from: anchor)
   }
 }
 
@@ -232,7 +237,8 @@ func resolveDue(_ request: DueRequest, defaultTime: () throws -> (hour: Int, min
   if request.recurrence == .yearly && request.day == nil { throw RemindError("--every year needs --on") }
   if let recurrence = request.recurrence {
     let time = request.allDay ? nil : try request.time ?? defaultTime()
-    return try firstOccurrence(recurrence, anchor: request.day, from: max(request.day ?? today, today), time: time, now: now)
+    return try firstOccurrence(
+      recurrence, anchor: request.day, from: max(request.day ?? today, today), time: time, now: now)
   }
   if request.allDay { return .allDay(request.day ?? today) }
   guard request.day != nil || request.time != nil else { return nil }
@@ -328,7 +334,9 @@ func isHidden(_ scalar: Unicode.Scalar) -> Bool {
 }
 
 func checkWritable(_ text: String, _ name: String, multiline: Bool = false) throws {
-  if sanitize(text, multiline: multiline) != text { throw RemindError("\(name) contains control or invisible characters") }
+  if sanitize(text, multiline: multiline) != text {
+    throw RemindError("\(name) contains control or invisible characters")
+  }
 }
 
 func sanitize(_ text: String, multiline: Bool = false) -> String {

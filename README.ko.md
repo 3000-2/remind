@@ -6,7 +6,7 @@ macOS 미리 알림을 EventKit 으로 다루는 CLI. AI 에이전트와 사람�
 
 ## 설치
 
-macOS 14 이상과 Xcode Command Line Tools(`xcode-select --install`)가 필요하다.
+macOS 14 이상에서 동작한다. 빌드에는 Swift 6.1 이상(Xcode 또는 Command Line Tools 16.3 이상, `xcode-select --install`)이 필요하다.
 
 ```bash
 git clone https://github.com/3000-2/remind && cd remind
@@ -52,6 +52,17 @@ remind help                                     # 전체 옵션
 - `aliases`: `--list` 에 쓸 별칭.
 - `defaultTime`: 날짜만 줬을 때 쓸 시각.
 - `listDefaultTimes`: 목록별 `defaultTime`. 키는 목록 이름이나 별칭.
+
+## 개발
+
+```bash
+make test     # 유닛 테스트 (Swift Testing)
+make lint     # swift format lint, make format 으로 고친다
+make check    # lint + test
+make e2e      # E2E 테스트, 미리 알림에 「remind-test」 목록을 만들어 쓴다
+```
+
+`make e2e` 는 터미널에 미리 알림 권한이 필요하다. `remind-test` 목록은 남고 아이폰에도 동기화되므로 미리 알림 앱에서 지운다.
 
 ## 에이전트와 쓰기
 

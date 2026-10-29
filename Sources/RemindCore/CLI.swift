@@ -2,34 +2,34 @@ import EventKit
 import Foundation
 
 let usage = """
-remind add "title" [--list L] [--on DATE] [--at HH:MM | --all-day] [--every SPEC] [--alert none|30m|2h|1d]
-                   [--note text] [--url https://...] [--priority high|medium|low] [--force] [--json]
-remind edit <id> [--title text] [--list L] [options of add] [--clear note,url,priority,due,repeat] [--json]
-remind list [--list L] [--due today|week|overdue] [--search text] [--done] [--json]
-remind lists [--json]
-remind lists add <name>
-remind done <id>... [--json]
-remind undone <id>... [--json]
-remind delete <id>...
-remind help
-"""
+  remind add "title" [--list L] [--on DATE] [--at HH:MM | --all-day] [--every SPEC] [--alert none|30m|2h|1d]
+                     [--note text] [--url https://...] [--priority high|medium|low] [--force] [--json]
+  remind edit <id> [--title text] [--list L] [options of add] [--clear note,url,priority,due,repeat] [--json]
+  remind list [--list L] [--due today|week|overdue] [--search text] [--done] [--json]
+  remind lists [--json]
+  remind lists add <name>
+  remind done <id>... [--json]
+  remind undone <id>... [--json]
+  remind delete <id>...
+  remind help
+  """
 
 let help = """
-\(usage)
+  \(usage)
 
-DATE  YYYY-MM-DD, today, tomorrow, or a weekday (mon = the next Monday after today)
-SPEC  day, weekday, year, mon,wed,fri, or 10th,25th,last
+  DATE  YYYY-MM-DD, today, tomorrow, or a weekday (mon = the next Monday after today)
+  SPEC  day, weekday, year, mon,wed,fri, or 10th,25th,last
 
-A date without --at uses the default time (09:00 unless configured). --at alone means today, or tomorrow if passed.
-A due time gets an on-time alarm. --alert 1d adds one early alarm; --alert none sets no time alarm.
---all-day sets a date with no time and no alarm. --every year needs --on.
-edit changes only the options given. On a repeating reminder, --on moves to the first repeat day on or after it.
-undone works on non-repeating reminders.
---due today and week include overdue reminders. --done shows the newest 50.
-Put -- before a title that starts with --.
-Config (optional): \(configPath)
-  {"aliases": {"w": "Work"}, "defaultTime": "09:00", "listDefaultTimes": {"Work": "10:00"}}
-"""
+  A date without --at uses the default time (09:00 unless configured). --at alone means today, or tomorrow if passed.
+  A due time gets an on-time alarm. --alert 1d adds one early alarm; --alert none sets no time alarm.
+  --all-day sets a date with no time and no alarm. --every year needs --on.
+  edit changes only the options given. On a repeating reminder, --on moves to the first repeat day on or after it.
+  undone works on non-repeating reminders.
+  --due today and week include overdue reminders. --done shows the newest 50.
+  Put -- before a title that starts with --.
+  Config (optional): \(configPath)
+    {"aliases": {"w": "Work"}, "defaultTime": "09:00", "listDefaultTimes": {"Work": "10:00"}}
+  """
 
 enum Command: String {
   case add, edit, list, lists, done, undone, delete
@@ -80,7 +80,9 @@ func fail(_ message: String, showUsage: Bool = false) -> Never {
 }
 
 func ids(_ args: Args, _ command: Command) throws -> [String] {
-  guard !args.positional.isEmpty else { throw RemindError("\(command.rawValue) needs at least one id", showUsage: true) }
+  guard !args.positional.isEmpty else {
+    throw RemindError("\(command.rawValue) needs at least one id", showUsage: true)
+  }
   return args.positional
 }
 
@@ -203,7 +205,9 @@ func complete(_ ids: [String], _ reminders: Reminders, json: Bool) throws {
 func uncomplete(_ ids: [String], _ reminders: Reminders, json: Bool) throws {
   let items = try reminders.fetchAll(ids)
   for item in items {
-    if item.hasRecurrenceRules { throw RemindError("Repeating reminder: uncheck it in the Reminders app (\(item.title ?? ""))") }
+    if item.hasRecurrenceRules {
+      throw RemindError("Repeating reminder: uncheck it in the Reminders app (\(item.title ?? ""))")
+    }
   }
   for item in items {
     item.isCompleted = false
@@ -215,17 +219,21 @@ func uncomplete(_ ids: [String], _ reminders: Reminders, json: Bool) throws {
 
 func delete(_ ids: [String], _ reminders: Reminders) throws {
   let items = try reminders.fetchAll(ids)
-  let lines = items.map { "Deleted: [\(sanitize($0.calendar.title))] \(sanitize($0.title ?? "")) (\($0.calendarItemIdentifier))" }
+  let lines = items.map {
+    "Deleted: [\(sanitize($0.calendar.title))] \(sanitize($0.title ?? "")) (\($0.calendarItemIdentifier))"
+  }
   for item in items { try reminders.store.remove(item, commit: false) }
   try reminders.store.commit()
-  lines.forEach { print($0) }
+  for line in lines { print(line) }
 }
 
 func showLists(_ reminders: Reminders, json: Bool) {
   let defaultID = reminders.store.defaultCalendarForNewReminders()?.calendarIdentifier
-  let rows = reminders.lists.map { (name: sanitize($0.title, multiline: json), isDefault: $0.calendarIdentifier == defaultID) }
+  let rows = reminders.lists.map {
+    (name: sanitize($0.title, multiline: json), isDefault: $0.calendarIdentifier == defaultID)
+  }
   if json { return printJSON(rows.map { ["name": $0.name, "default": $0.isDefault] }) }
-  rows.forEach { print($0.isDefault ? "\($0.name) (default)" : $0.name) }
+  for row in rows { print(row.isDefault ? "\(row.name) (default)" : row.name) }
 }
 
 func run(_ action: Action, _ reminders: Reminders, now: Date) throws {
@@ -241,28 +249,33 @@ func run(_ action: Action, _ reminders: Reminders, now: Date) throws {
   }
 }
 
-let arguments = Array(CommandLine.arguments.dropFirst())
-let now = Date()
-do {
-  guard let name = arguments.first else { throw RemindError("No command", showUsage: true) }
-  if ["help", "-h", "--help"].contains(name) {
-    guard arguments.count == 1 else { throw RemindError("help takes no arguments") }
-    print(help)
+@MainActor
+public func runCLI(_ arguments: [String]) async -> Never {
+  let now = Date()
+  do {
+    guard let name = arguments.first else { throw RemindError("No command", showUsage: true) }
+    if ["help", "-h", "--help"].contains(name) {
+      guard arguments.count == 1 else { throw RemindError("help takes no arguments") }
+      print(help)
+      exit(0)
+    }
+    guard let command = Command(rawValue: name) else {
+      throw RemindError("Unknown command: \(name)", showUsage: true)
+    }
+    let args = try parseArgs(
+      Array(arguments.dropFirst()), command: name, values: command.values, switches: command.switches)
+    if args.help {
+      print(help)
+      exit(0)
+    }
+    let action = try makeAction(command, args, now: now)
+    let reminders = Reminders(config: try loadConfig())
+    try await reminders.requestAccess()
+    try run(action, reminders, now: now)
     exit(0)
+  } catch let error as RemindError {
+    fail(error.message, showUsage: error.showUsage)
+  } catch {
+    fail(error.localizedDescription)
   }
-  guard let command = Command(rawValue: name) else { throw RemindError("Unknown command: \(name)", showUsage: true) }
-  let args = try parseArgs(
-    Array(arguments.dropFirst()), command: name, values: command.values, switches: command.switches)
-  if args.help {
-    print(help)
-    exit(0)
-  }
-  let action = try makeAction(command, args, now: now)
-  let reminders = Reminders(config: try loadConfig())
-  try reminders.requestAccess()
-  try run(action, reminders, now: now)
-} catch let error as RemindError {
-  fail(error.message, showUsage: error.showUsage)
-} catch {
-  fail(error.localizedDescription)
 }

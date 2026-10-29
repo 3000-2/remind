@@ -6,7 +6,7 @@ A CLI for macOS Reminders built on EventKit, made for AI agents and people. Remi
 
 ## Install
 
-Requires macOS 14+ and Xcode Command Line Tools (`xcode-select --install`).
+Runs on macOS 14+. Building needs Swift 6.1+ (Xcode or Command Line Tools 16.3+, `xcode-select --install`).
 
 ```bash
 git clone https://github.com/3000-2/remind && cd remind
@@ -52,6 +52,17 @@ Optional. `~/.config/remind/config.json` (or `$XDG_CONFIG_HOME/remind/config.jso
 - `aliases`: short names for `--list`.
 - `defaultTime`: time used when only a date is given.
 - `listDefaultTimes`: per-list `defaultTime`, keyed by list name or alias.
+
+## Development
+
+```bash
+make test     # unit tests (Swift Testing)
+make lint     # swift format lint; make format fixes it
+make check    # lint + test
+make e2e      # end-to-end tests; writes to a "remind-test" list in your Reminders
+```
+
+`make e2e` needs Reminders access for your terminal. The `remind-test` list stays (and syncs to iPhone); delete it in the Reminders app.
 
 ## Use with an agent
 
