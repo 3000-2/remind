@@ -6,7 +6,11 @@ A CLI for macOS Reminders built on EventKit, made for AI agents and people. Remi
 
 ## Install
 
-Ask your agent: `Read https://raw.githubusercontent.com/3000-2/remind/main/INSTALL.md and set up remind.`
+Paste this to your agent:
+
+```text
+Read https://raw.githubusercontent.com/3000-2/remind/main/INSTALL.md and set up remind.
+```
 
 Or by hand:
 

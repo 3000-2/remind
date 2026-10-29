@@ -6,7 +6,11 @@ macOS 미리 알림을 EventKit 으로 다루는 CLI. AI 에이전트와 사람�
 
 ## 설치
 
-에이전트에게: `Read https://raw.githubusercontent.com/3000-2/remind/main/INSTALL.md and set up remind.`
+에이전트에게 붙여 넣는다:
+
+```text
+Read https://raw.githubusercontent.com/3000-2/remind/main/INSTALL.md and set up remind.
+```
 
 직접 설치:
 
