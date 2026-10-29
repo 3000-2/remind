@@ -4,6 +4,11 @@ install:
 	swift build -c release
 	mkdir -p $(PREFIX)/bin
 	install .build/release/remind $(PREFIX)/bin/remind
+	@sh scripts/install.sh install "$(PREFIX)/bin" || echo "skill install failed; the binary is installed" >&2
+
+uninstall:
+	rm -f $(PREFIX)/bin/remind
+	@sh scripts/install.sh uninstall
 
 test:
 	env -u REMIND_E2E swift test
@@ -19,4 +24,4 @@ format:
 lint:
 	swift format lint --strict --recursive Package.swift Sources Tests
 
-.PHONY: install test check e2e format lint
+.PHONY: install uninstall test check e2e format lint

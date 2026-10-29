@@ -10,6 +10,7 @@ remind is a Swift CLI over EventKit for macOS Reminders. People install it with 
 - `Sources/remind/main.swift`: entry point
 - `Tests/RemindCoreTests`: unit tests (Swift Testing), CLI output tests, and `EndToEnd`, which runs only with `REMIND_E2E=1`
 - `skills/remind/SKILL.md`: the skill users install; keep it in sync with `remind help`
+- `scripts/install.sh`: copies the skill on `make install`; keep its targets in sync with README
 - `Package.swift`, `.swift-format`, `Makefile`: build, format and lint setup; `.agents/skills/ship`: the commit checklist
 
 ## Rules

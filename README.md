@@ -10,7 +10,7 @@ Runs on macOS 14+. Building needs Swift 6.1+ (Xcode or Command Line Tools 16.3+,
 
 ```bash
 git clone https://github.com/3000-2/remind && cd remind
-make install   # installs to ~/.local/bin
+make install   # installs the binary to ~/.local/bin and the agent skill (see below)
 echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc && exec zsh   # if not on PATH yet
 remind lists   # first run asks for Reminders access
 ```
@@ -32,7 +32,7 @@ remind help                                     # every option
 
 - Dates: `YYYY-MM-DD`, `today`, `tomorrow`, or a weekday (`mon` = the next Monday after today).
 - Repeat: `--every day|weekday|year|mon,wed|10th,25th,last`.
-- A due time gets an on-time alarm; `--alert 1d` adds one early alarm, `--alert none` removes alarms. `--all-day` has no alarm; iPhone notifies at its "Today Notification" time.
+- A due time gets an on-time alarm; `--alert 1d` adds one early alarm, `--alert none` sets no time alarm. `--all-day` has no alarm; iPhone notifies at its "Today Notification" time.
 - `add` refuses a title that already exists in the list (`--force` to add anyway).
 - Other commands: `undone`, `delete`, `lists add <name>`.
 - JSON output changed in this version: `due` is ISO 8601 (all-day: `YYYY-MM-DD`), `lists --json` returns objects, `move` and `--next` became `edit --list` and `--on mon`.
@@ -66,11 +66,11 @@ make e2e      # end-to-end tests; writes to a "remind-test" list in your Reminde
 
 ## Use with an agent
 
-Install the skill (Claude Code, Codex, Cursor, and other agents that support skills):
+`make install` also copies the skill to `~/.agents/skills/remind` (read by Codex, Gemini CLI, OpenCode and others) and, if you use Claude Code, `~/.claude/skills/remind`. Run it again after `git pull` to update both; `make uninstall` removes them. It never edits your agent settings or rules.
 
-```bash
-npx skills add 3000-2/remind
-```
+For other agents, or without a clone: `npx skills add 3000-2/remind -g`. Use one method or the other.
+
+To have agents suggest reminders unprompted, say so in your own agent rules (for example, "offer a reminder when a task needs a follow-up later").
 
 Let the agent read freely and ask before anything else:
 - Claude Code: allow `Bash(remind list:*)`, `Bash(remind lists:*)` and `Bash(remind help)`.

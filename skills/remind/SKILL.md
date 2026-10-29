@@ -1,6 +1,6 @@
 ---
 name: remind
-description: Add, find, edit, and complete Apple Reminders on macOS with the `remind` CLI (synced to iPhone via iCloud). Use when the user says "remind me", asks to add, check, change, or complete reminders, or when a task needs a follow-up on a future date (offer it; don't add it unasked).
+description: Add, find, edit, and complete Apple Reminders on macOS with the `remind` CLI (synced to iPhone via iCloud). Use when the user says "remind me" (in any language), asks to add, check, change, or complete reminders, or when a task needs a follow-up on a future date (offer it; don't add it unasked).
 compatibility: Requires macOS 14+ and the remind CLI (https://github.com/3000-2/remind)
 ---
 
@@ -32,9 +32,10 @@ remind lists add <name>
 
 - DATE: `YYYY-MM-DD`, `today`, `tomorrow`, or a weekday (`mon` = the next Monday after today). Prefer these over computing dates yourself.
 - SPEC: `day`, `weekday`, `year` (needs `--on`), `mon,wed`, `10th,25th,last`.
-- A date without `--at` uses the default time. A due time gets an on-time alarm; `--alert 1d` adds one early alarm; `--alert none` removes alarms. `--all-day` has no alarm.
-- Write the title as one actionable line; put links in `--url`, details in `--note`.
+- A date without `--at` uses the default time. A due time gets an on-time alarm; `--alert 1d` adds one early alarm; `--alert none` sets no time alarm. `--all-day` has no alarm.
+- Write titles and notes in the language the user is writing in, not the language of these examples. Keep the title one actionable line; put links in `--url`, details in `--note`.
 - `add` refuses a duplicate title in the same list; don't pass `--force` unless the user wants a duplicate.
+- In `--json` rows with a timed `due`, a missing `alert` means the on-time alarm only and `"none"` means no time alarm; `"custom"` in `alert` or `repeat` was set in the Reminders app.
 - `edit` changes only the options given. Completing a repeating reminder advances it; `undone` works only on non-repeating ones.
 
 ## Errors

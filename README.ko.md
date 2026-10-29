@@ -10,7 +10,7 @@ macOS 14 이상에서 동작한다. 빌드에는 Swift 6.1 이상(Xcode 또는 C
 
 ```bash
 git clone https://github.com/3000-2/remind && cd remind
-make install   # ~/.local/bin 에 설치
+make install   # 바이너리는 ~/.local/bin 에, 에이전트 스킬도 함께 설치 (아래 참고)
 echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc && exec zsh   # PATH 에 없으면
 remind lists   # 처음 실행하면 미리 알림 접근 권한을 묻는다
 ```
@@ -32,7 +32,7 @@ remind help                                     # 전체 옵션
 
 - 날짜: `YYYY-MM-DD`, `today`, `tomorrow`, 요일(`mon` = 오늘 이후 첫 월요일).
 - 반복: `--every day|weekday|year|mon,wed|10th,25th,last`.
-- 시각이 있으면 정시 알림이 붙는다. `--alert 1d` 는 미리 알림 하나를 더하고 `--alert none` 은 알림을 없앤다. `--all-day` 는 알림이 없고 아이폰이 「오늘 알림」 시각에 알려 준다.
+- 시각이 있으면 정시 알림이 붙는다. `--alert 1d` 는 미리 알림 하나를 더하고 `--alert none` 은 시간 알림을 두지 않는다. `--all-day` 는 알림이 없고 아이폰이 「오늘 알림」 시각에 알려 준다.
 - `add` 는 같은 목록에 같은 제목이 있으면 거부한다(`--force` 로 무시).
 - 그 밖의 명령: `undone`, `delete`, `lists add <이름>`.
 - 이번 버전에서 바뀐 출력: `due` 는 ISO 8601(종일은 `YYYY-MM-DD`), `lists --json` 은 객체 배열, `move`·`--next` 는 `edit --list`·`--on mon` 으로 바뀌었다.
@@ -66,11 +66,11 @@ make e2e      # E2E 테스트, 미리 알림에 「remind-test」 목록을 만�
 
 ## 에이전트와 쓰기
 
-스킬을 설치한다(Claude Code·Codex·Cursor 등 스킬을 지원하는 에이전트):
+`make install` 은 스킬도 `~/.agents/skills/remind`(Codex·Gemini CLI·OpenCode 등이 읽는다)와, Claude Code 를 쓰면 `~/.claude/skills/remind` 에 복사한다. `git pull` 후 다시 실행하면 둘 다 갱신되고 `make uninstall` 로 지운다. 에이전트 설정이나 규칙 파일은 건드리지 않는다.
 
-```bash
-npx skills add 3000-2/remind
-```
+다른 에이전트이거나 저장소를 받지 않았다면 `npx skills add 3000-2/remind -g`. 둘 중 하나만 쓴다.
+
+에이전트가 먼저 리마인더를 제안하게 하려면 각자의 규칙에 적는다(예: "나중에 확인할 일이 생기면 리마인더 등록을 제안").
 
 읽기만 자동 허용하고 나머지는 승인받게 설정한다:
 - Claude Code: `Bash(remind list:*)`, `Bash(remind lists:*)`, `Bash(remind help)` 허용.
